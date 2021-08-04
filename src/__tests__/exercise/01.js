@@ -26,14 +26,27 @@ test('counter increments and decrements when the buttons are clicked', () => {
   const message = div.firstChild.querySelector('div')
   // 🐨 expect the message.textContent toBe 'Current count: 0'
   expect(message.textContent).toBe('Current count: 0')
-  // 🐨 click the increment button (💰 increment.click())
-  increment.click()
+// Now we have an increment and a decrement using the mouseEvent constructor, and the dispatchEvent API. This aligns 
+// our test a little bit closer to the user's experience when they're actually using our component.
+  const incrementClickEvent = new MouseEvent('click', {
+    bubbles: true,
+    cancelable: true,
+    button: 0,
+  })
+// We need to configure the clickEvent so that it bubbles so that React can take advantage of its event delegation 
+// and make it cancelable because that's how the event is going to be by default when the user clicks on the button. 
+// We'll make it a left button click by setting button to zero.
+  increment.dispatchEvent(incrementClickEvent)
   // 🐨 assert the message.textContent
   expect(message.textContent).toBe('Current count: 1')
-  // 🐨 click the decrement button (💰 decrement.click())
-  decrement.click()
+  const decrementClickEvent = new MouseEvent('click', {
+    bubbles: true,
+    cancelable: true,
+    button: 0,
+  })
+  decrement.dispatchEvent(decrementClickEvent)
+  // console.log(document.body.innerHTML)
   // 🐨 assert the message.textContent
-  console.log(document.body.innerHTML)
   expect(message.textContent).toBe('Current count: 0')
 })
 
@@ -70,10 +83,10 @@ test('counter increments and decrements when the buttons are clicked', () => {
 
 // Cleaning up Test Environments ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// What we're going to do instead is we'll have a beforeEach. We'll make sure that our test environment is awesome, 
+// What we're going to do instead is we'll have a beforeEach. We'll make sure that our test environment is awesome,
 // document.body.innerHTML = "". If we save that, then we're going to get a passing test for the one that's working.
 
-// I just wanted to make sure that you understood the importance of cleaning up your environment between each one of 
+// I just wanted to make sure that you understood the importance of cleaning up your environment between each one of
 // your tests, so that your tests can run in total isolation of each other.
 
 /* eslint no-unused-vars:0 */
