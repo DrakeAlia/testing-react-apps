@@ -34,7 +34,7 @@ test('counter increments and decrements when the buttons are clicked', () => {
   const [decrement, increment] = container.querySelectorAll('button')
   const message = container.firstChild.querySelector('div')
 
-  expect(message.textContent).toBe('Current count: 0')
+  expect(message).toHaveTextContent('Current count: 0')
 
   // 🐨 replace the next two statements with `fireEvent.click(button)` (X)
 
@@ -45,7 +45,7 @@ test('counter increments and decrements when the buttons are clicked', () => {
   // })
   // increment.dispatchEvent(incrementClickEvent)
   fireEvent.click(increment)
-  expect(message.textContent).toBe('Current count: 1')
+  expect(message).toHaveTextContent('Current count: 1')
   // const decrementClickEvent = new MouseEvent('click', {
   //   bubbles: true,
   //   cancelable: true,
@@ -53,7 +53,7 @@ test('counter increments and decrements when the buttons are clicked', () => {
   // })
   // decrement.dispatchEvent(decrementClickEvent)
   fireEvent.click(decrement)
-  expect(message.textContent).toBe('Current count: 0')
+  expect(message).toHaveTextContent('Current count: 0')
 })
 
 // Rendering /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -78,3 +78,16 @@ test('counter increments and decrements when the buttons are clicked', () => {
 // increment and message elements. Then we'll verify that the text content of the message starts out at . We'll click
 // on the increment, we'll verify that the text content of the message changed, then we click on decrement, and then
 // verify that our message was updated there as well.
+
+// Assertions Extra /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// What we did here was not a whole lot. We changed the message.textContent to just simply message, and then our toBe 
+// to this toHaveTextContent. Now we're expecting this DOM node to have a certain text content.
+
+// The only way that this is possible is if we preload all of the expect assertions that are built into jest-dom by 
+// installing jest-dom, and then adding it to our configuration here in our jest.config, where we specify that it's 
+// one of the setup files after the jest environment has been established.
+
+// If you're using something like create-react-app or something that doesn't expose the Jest configuration, then you 
+// want to have some setup file that does this import for you. With that, you'll have access to all of the awesome 
+// assertions that are built into jest-dom.
