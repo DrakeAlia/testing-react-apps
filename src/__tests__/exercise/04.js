@@ -4,16 +4,16 @@
 import * as React from 'react'
 import {render, screen} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import faker from 'faker'
+import {build, fake} from '@jackfranklin/test-data-bot'
 import Login from '../../components/login'
 
-function buildLoginForm(overrides) {
-  return {
-    username: faker.internet.userName(),
-    password: faker.internet.password(),
-    ...overrides,
+const buildLoginForm = build({
+  fields: {
+    username: fake(f => f.internet.userName()),
+    password: fake(f => f.internet.password()),
+
   }
-}
+})
 
 test('submitting the form calls onSubmit with username and password', () => {
   const handleSubmit = jest.fn()
@@ -72,3 +72,10 @@ eslint
 // needs of the particular mock object factory that you have.
 
 // use Test Data Bot (Extra) ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Fake is called with the faker module, and then we can get rid of our faker import because test-data-bot is going 
+// to do that for us. It's also going to handle that overrides for us as well.
+
+// In review, all that we did here was we took our build login form that we created at the beginning and replaced it 
+// with one that we create with the test-data-bot module. We generate that function with the build utility and then 
+// use the fake utility to configure our fields for the username and password.
