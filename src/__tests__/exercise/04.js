@@ -7,25 +7,19 @@ import userEvent from '@testing-library/user-event'
 import Login from '../../components/login'
 
 test('submitting the form calls onSubmit with username and password', () => {
-  // 🐨 create a variable called "submittedData" and a handleSubmit function that
-  // accepts the data and assigns submittedData to the data that was submitted
-  let submittedData
-  const handleSubmit = (data) => submittedData = data
-  // 🐨 render the login with your handleSubmit function as the onSubmit prop
+  const handleSubmit = jest.fn()
   render(<Login onSubmit={handleSubmit} />)
   const username = 'chucknorris'
   const password = 'i need no password'
 
-  // 🐨 get the username and password fields via `getByLabelText`
   userEvent.type(screen.getByLabelText(/username/i), username)
   userEvent.type(screen.getByLabelText(/password/i), password)
-  // 🐨 click on the button with the text "Submit"
   userEvent.click(screen.getByRole('button', {name: /submit/i}))
-  // assert that submittedData is correct
-  expect(submittedData).toEqual({
+  expect(handleSubmit).toHaveBeenCalledWith({
     username,
     password,
   })
+  expect(handleSubmit).toHaveBeenCalledTimes(1)
 })
 
 // 💰 use `toEqual` from Jest: 📜 https://jestjs.io/docs/en/expect#toequalvalue
@@ -42,3 +36,14 @@ eslint
 
 // We also pass an onSubmit handler, which will take the data that it's called with and assign a local variable to 
 // that value, so that we can then assert on that value after we've clicked that Submit button.
+
+// Use a Jest Mock Function (Extra) ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// All that we did here is remove the local variable that we had and our own custom little function we were using to 
+// track what this function was called with and instead used a Jest function which we can pass into the onSubmit handler.
+
+// We can use the assertion toHaveBeenCalledWith and toHaveBeenCalledTimes to get us the confidence that we need that 
+// this onSubmit prop is being used appropriately based on how the user is going to react with what's rendered by the 
+// login component.
+
+// Generate Test Data (Extra) ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
