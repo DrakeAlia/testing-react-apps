@@ -7,10 +7,11 @@ import userEvent from '@testing-library/user-event'
 import faker from 'faker'
 import Login from '../../components/login'
 
-function buildLoginForm() {
+function buildLoginForm(overrides) {
   return {
     username: faker.internet.userName(),
     password: faker.internet.password(),
+    ...overrides,
   }
 }
 
@@ -64,3 +65,10 @@ eslint
 
 // Allow for Overrides (Extra) ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+// All that we did here is add an overrides argument to this build login form, and then combine our object that we 
+// generate when this is normally called with whatever is passed as overrides.
+
+// Sometimes these overrides can be options from which you can derive other generated values. It just depends on the 
+// needs of the particular mock object factory that you have.
+
+// use Test Data Bot (Extra) ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
