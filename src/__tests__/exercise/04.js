@@ -11,8 +11,7 @@ const buildLoginForm = build({
   fields: {
     username: fake(f => f.internet.userName()),
     password: fake(f => f.internet.password()),
-
-  }
+  },
 })
 
 test('submitting the form calls onSubmit with username and password', () => {
@@ -56,26 +55,26 @@ eslint
 
 // Generate Test Data (Extra) ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// All that we did here is pull in Faker from the Faker module, really popular module for generating fake test data. 
+// All that we did here is pull in Faker from the Faker module, really popular module for generating fake test data.
 // We generated a username and a password. Down here, we put that into a function that we could call.
 
 // Now, we're communicating that it doesn't matter what they are, just that they are your typical username and password
-// using this buildLoginForm. Then, we fill those in. We verify that handleSubmit is called with the values that we 
+// using this buildLoginForm. Then, we fill those in. We verify that handleSubmit is called with the values that we
 // filled into the form.
 
 // Allow for Overrides (Extra) ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// All that we did here is add an overrides argument to this build login form, and then combine our object that we 
+// All that we did here is add an overrides argument to this build login form, and then combine our object that we
 // generate when this is normally called with whatever is passed as overrides.
 
-// Sometimes these overrides can be options from which you can derive other generated values. It just depends on the 
+// Sometimes these overrides can be options from which you can derive other generated values. It just depends on the
 // needs of the particular mock object factory that you have.
 
 // use Test Data Bot (Extra) ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// Fake is called with the faker module, and then we can get rid of our faker import because test-data-bot is going 
+// Fake is called with the faker module, and then we can get rid of our faker import because test-data-bot is going
 // to do that for us. It's also going to handle that overrides for us as well.
 
-// In review, all that we did here was we took our build login form that we created at the beginning and replaced it 
-// with one that we create with the test-data-bot module. We generate that function with the build utility and then 
+// In review, all that we did here was we took our build login form that we created at the beginning and replaced it
+// with one that we create with the test-data-bot module. We generate that function with the build utility and then
 // use the fake utility to configure our fields for the username and password.
