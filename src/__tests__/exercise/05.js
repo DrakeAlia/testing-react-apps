@@ -24,6 +24,12 @@ const server = setupServer(
   rest.post(
     'https://auth-provider.example.com/api/login',
     async (req, res, ctx) => {
+      if (!req.body.password) {
+        return res(ctx.status(400), ctx.json({message: 'password required'}))
+      }
+      if (!req.body.username) {
+        return res(ctx.status(400), ctx.json({message: 'username required'}))
+      }
       return res(ctx.json({username: req.body.username}))
     },
   ),
@@ -67,3 +73,12 @@ test(`logging in displays the user's username`, async () => {
 
 // In our test, we simply clicked on that Submit button. We waited for the loading indicator to go away and then 
 // we verified that the username did show up.
+
+// Mock Responses ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Something that's really important with the server handlers is that you simulate the exact behavior of your backend.
+// You try to do that with as much robustness as possible. One thing that our backend does is it will send a 400 
+// response if a required username or password is not provided.
+
+// We feel a little bit more confident because the mock resembles the real world more closely. This allows us to add 
+// some additional tests later to verify what the UI does when we get a 400 response because we didn't submit a password.
