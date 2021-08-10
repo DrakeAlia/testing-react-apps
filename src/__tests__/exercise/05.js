@@ -8,7 +8,6 @@ import {build, fake} from '@jackfranklin/test-data-bot'
 import {setupServer} from 'msw/node'
 import {handlers} from 'test/server-handlers'
 import Login from '../../components/login-submission'
-import {textContent} from 'htmlparser2/node_modules/domutils'
 
 const buildLoginForm = build({
   fields: {
@@ -53,7 +52,7 @@ test(`omitting the password results in an error`, async () => {
   // screen.debug()
 
   expect(screen.getByRole('alert').textContent).toMatchInlineSnapshot(
-    `"password is required"`,
+    `"password required"`,
   )
 })
 
@@ -114,13 +113,13 @@ test(`omitting the password results in an error`, async () => {
 
 // Use Inline Snapshots (Extra) /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// As cool as this assertion is, I'm not a huge fan of hard coding error messages like this because if this error 
-// message were ever to change -- let's go to our server handlers again, and we say, "OK. Instead of password required, 
+// As cool as this assertion is, I'm not a huge fan of hard coding error messages like this because if this error
+// message were ever to change -- let's go to our server handlers again, and we say, "OK. Instead of password required,
 // we'd say password is required." -- now, our test is going to fail.
 
-// All I have to do is press U to get that updated. My test is going to pass, and my test code is going to be updated 
-// automatically. This is one feature that I use for error messages all the time. I think it's super, super helpful as 
+// All I have to do is press U to get that updated. My test is going to pass, and my test code is going to be updated
+// automatically. This is one feature that I use for error messages all the time. I think it's super, super helpful as
 // an assertion for this kind of scenario.
 
-// In review, all that we did here was instead of saying that we expect to this DOM node to have certain textContent, 
+// In review, all that we did here was instead of saying that we expect to this DOM node to have certain textContent,
 // we grab that textContent, use the toMatchInlineSnapshot and allow just to update this value for us automatically.
