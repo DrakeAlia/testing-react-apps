@@ -8,6 +8,7 @@ import {build, fake} from '@jackfranklin/test-data-bot'
 import {setupServer} from 'msw/node'
 import {handlers} from 'test/server-handlers'
 import Login from '../../components/login-submission'
+import {rest} from 'msw'
 
 const buildLoginForm = build({
   fields: {
@@ -20,6 +21,7 @@ const server = setupServer(...handlers)
 
 beforeAll(() => server.listen())
 afterAll(() => server.close())
+afterEach(() => server.resetHandlers())
 
 test(`logging in displays the user's username`, async () => {
   render(<Login />)
@@ -29,13 +31,8 @@ test(`logging in displays the user's username`, async () => {
   userEvent.type(screen.getByLabelText(/password/i), password)
   userEvent.click(screen.getByRole('button', {name: /submit/i}))
 
-  // as soon as the user hits submit, we render a spinner to the screen. That spinner has an aria-label of "loading"
-  // for accessibility purposes, so
-  // 🐨 wait for the loading spinner to be removed using waitForElementToBeRemoved (X)
   await waitForElementToBeRemoved(() => screen.getByLabelText(/loading/i))
 
-  // once the login is successful, then the loading spinner disappears and we render the username.
-  // 🐨 assert that the username is on the screen (X)
   expect(screen.getByText(username)).toBeInTheDocument()
 })
 
@@ -54,6 +51,26 @@ test(`omitting the password results in an error`, async () => {
   expect(screen.getByRole('alert').textContent).toMatchInlineSnapshot(
     `"password required"`,
   )
+})
+
+test(`unknow server error displays the error message`, async () => {
+  const testErrorMessage = 'Oh no, something bad happend'
+  server.use(
+    rest.post(
+      'https://auth-provider.example.com/api/login',
+      async (req, res, ctx) => {
+        return res(ctx.status(500), ctx.json({message: testErrorMessage}))
+      },
+    ),
+  )
+  render(<Login />)
+  userEvent.click(screen.getByRole('button', {name: /submit/i}))
+
+  await waitForElementToBeRemoved(() => screen.getByLabelText(/loading/i))
+
+  // screen.debug()
+
+  expect(screen.getByRole('alert')).toHaveTextContent(testErrorMessage)
 })
 
 // 📜 https://mswjs.io/
@@ -123,3 +140,18 @@ test(`omitting the password results in an error`, async () => {
 
 // In review, all that we did here was instead of saying that we expect to this DOM node to have certain textContent,
 // we grab that textContent, use the toMatchInlineSnapshot and allow just to update this value for us automatically.
+
+// Use One-off Server Handlers (Extra) /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// I want to add a test to see what happens if there's an unexpected server error. I could go into my server handlers 
+// here and say, "If request.getHeaders..." I don't know. We could add some special thing to say, "Hey, let's do an 
+// unexpected server error."
+
+// 4:05 In review, all that we did here is we added an afterEach to reset all the handlers that we add after the 
+// server has started, so all the handlers that are specific and co-located to a test. Then, we created this test and 
+// added a runtime handler here for overriding that login API request. This time, it's just going to give us a 500 
+// with testErrorMessage.
+
+// We wait for that loading to happen after we click on the button. We expect the alert to have that same error 
+// message that came back from this API response. That allows us to test what happens when the server does something 
+// unexpected without adding all of those "unexpected things" to our handlers here in our mock server handlers.
