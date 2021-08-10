@@ -2,13 +2,11 @@
 // http://localhost:3000/login-submission
 
 import * as React from 'react'
-// 🐨 you'll need to grab waitForElementToBeRemoved from '@testing-library/react' (X)
 import {render, screen, waitForElementToBeRemoved} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import {build, fake} from '@jackfranklin/test-data-bot'
-// 🐨 you'll need to import rest from 'msw' and setupServer from msw/node (X)
-import {rest} from 'msw'
 import {setupServer} from 'msw/node'
+import {handlers} from 'test/server-handlers'
 import Login from '../../components/login-submission'
 
 const buildLoginForm = build({
@@ -18,26 +16,9 @@ const buildLoginForm = build({
   },
 })
 
-// 🐨 get the server setup with an async function to handle the login POST request:
-// you'll want to respond with an JSON object that has the username. (X)
-const server = setupServer(
-  rest.post(
-    'https://auth-provider.example.com/api/login',
-    async (req, res, ctx) => {
-      if (!req.body.password) {
-        return res(ctx.status(400), ctx.json({message: 'password required'}))
-      }
-      if (!req.body.username) {
-        return res(ctx.status(400), ctx.json({message: 'username required'}))
-      }
-      return res(ctx.json({username: req.body.username}))
-    },
-  ),
-)
+const server = setupServer(...handlers)
 
-// 🐨 before all the tests, start the server with `server.listen()` (X)
 beforeAll(() => server.listen())
-// 🐨 after all the tests, stop the server with `server.close()` (X)
 afterAll(() => server.close())
 
 test(`logging in displays the user's username`, async () => {
@@ -46,7 +27,6 @@ test(`logging in displays the user's username`, async () => {
 
   userEvent.type(screen.getByLabelText(/username/i), username)
   userEvent.type(screen.getByLabelText(/password/i), password)
-  // 🐨 uncomment this and you'll start making the request! (X)
   userEvent.click(screen.getByRole('button', {name: /submit/i}))
 
   // as soon as the user hits submit, we render a spinner to the screen. That spinner has an aria-label of "loading"
@@ -82,3 +62,20 @@ test(`logging in displays the user's username`, async () => {
 
 // We feel a little bit more confident because the mock resembles the real world more closely. This allows us to add 
 // some additional tests later to verify what the UI does when we get a 400 response because we didn't submit a password.
+
+// Reuse Sever Request Handlers (Extra) ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// One of the cool things about MSW is that it works not only in Node but in the browser. That was its initial intent, 
+// and Node was added thereafter. I'm happy about this because it means that as awesome as it is for me to make these 
+// server handlers for my tests, it's even cooler to be able to share those server handlers for my development 
+// environment in the browser.
+
+// We're going to import test server handlers. We'll import the handlers from there. Then we can just say, 
+// "Instead of all this nonsense ... handlers," so we'll spread that array of handlers into that setup server position. 
+// We can save that. All of our tests are passing. We can now get rid of this {rest} from 'msw'. Things are working 
+// awesomely.
+
+// We get the benefit of this mock server, both in our development environment in the browser, as well as in our test 
+// environment in Node. All we had to do to do that is put our server handlers in a shared file, which we import in 
+// both our development environment, as well as our test environment, and we can have this nice shared experience 
+// between the both of them.
