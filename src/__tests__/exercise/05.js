@@ -39,6 +39,21 @@ test(`logging in displays the user's username`, async () => {
   expect(screen.getByText(username)).toBeInTheDocument()
 })
 
+test(`omitting the password results in an error`, async () => {
+  render(<Login />)
+  const {username} = buildLoginForm()
+
+  userEvent.type(screen.getByLabelText(/username/i), username)
+  // not going to fill in the password
+  userEvent.click(screen.getByRole('button', {name: /submit/i}))
+
+  await waitForElementToBeRemoved(() => screen.getByLabelText(/loading/i))
+
+  // screen.debug()
+
+  expect(screen.getByRole('alert')).toHaveTextContent('password required')
+})
+
 // 📜 https://mswjs.io/
 // 📜 https://testing-library.com/docs/dom-testing-library/api-async#waitforelementtoberemoved
 
@@ -79,3 +94,17 @@ test(`logging in displays the user's username`, async () => {
 // environment in Node. All we had to do to do that is put our server handlers in a shared file, which we import in 
 // both our development environment, as well as our test environment, and we can have this nice shared experience 
 // between the both of them.
+
+// Unhappy Path /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// If I don't pass a username or a password, I'm going to get an error right here that says, "The password is required." 
+// I'd like to test that UI in my test, so I'm going to have an extra test right here, where I'm going to say, 
+// "Omitting the password results in an error."
+
+// All we had to do to test this is render that login. We build that login form without the password. We type in the 
+// username and not the password. We click the submit button, wait for that loading to go away, and then verify that 
+// the error message showed up.
+
+// This was so easy because we already have server handlers, thanks to MSW, which simulate this API that we're mocking 
+// out to send us back an error if no password is provided. We didn't have to do any extra setup for our test, 
+// which is one of the things that I really love about MSW.
