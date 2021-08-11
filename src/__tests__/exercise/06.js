@@ -3,29 +3,10 @@
 
 import * as React from 'react'
 import {render, screen, act} from '@testing-library/react'
+import {useCurrentPosition} from 'react-use-geolocation'
 import Location from '../../examples/location'
 
-// 🐨 set window.navigator.geolocation to an object that has a getCurrentPosition mock function (X)
-beforeAll(() => {
-  window.navigator.geolocation = {
-    getCurrentPosition: jest.fn(),
-  }
-})
-
-// 💰 I'm going to give you this handy utility function
-// it allows you to create a promise that you can resolve/reject on demand.
-function deferred() {
-  let resolve, reject
-  const promise = new Promise((res, rej) => {
-    resolve = res
-    reject = rej
-  })
-  return {promise, resolve, reject}
-}
-// 💰 Here's an example of how you use this:
-// const {promise, resolve, reject} = deferred()
-// promise.then(() => {/* do something */})
-// // do other setup stuff and assert on the pending state
+jest.mock('react-use-geolocation')
 
 test('displays the users current location', async () => {
   const fakePosition = {
@@ -34,35 +15,22 @@ test('displays the users current location', async () => {
       longitude: 139,
     },
   }
-  // 🐨 create a deferred promise here (X)
-  // 🐨 Now we need to mock the geolocation's getCurrentPosition function (X)
-  // 🐨 so call mockImplementation on getCurrentPosition (X)
-  // 🐨 the first argument of your mock should accept a callback (X)
-  // 🐨 you'll call the callback when the deferred promise resolves (X)
-  const {promise, resolve} = deferred()
-  window.navigator.geolocation.getCurrentPosition.mockImplementation(
-    callback => {
-      promise.then(() => callback(fakePosition))
-    },
-  )
 
-  // 🐨 now that setup is done, render the Location component itself
+  let setReturnValue
+  function useMockCurrentPosition() {
+    const state = React.useState([])
+    setReturnValue = state[1]
+    return state[0]
+  }
+  useCurrentPosition.mockImplementation(useMockCurrentPosition)
+
   render(<Location />)
   expect(screen.getByLabelText(/loading/i)).toBeInTheDocument()
 
-  // 🐨 resolve the deferred promise (X)
-  // 🐨 wait for the promise to resolve (X)
-  // 💰 right around here, you'll probably notice you get an error log in the
-  // test output. You can ignore that for now and just add this next line:
-  // act(() => {})
-  await act(async () => {
-    resolve()
-    await promise
+  act(() => {
+    setReturnValue([fakePosition])
   })
 
-  // 🐨 create a fakePosition object that has an object called "coords" with latitude and longitude (X)
-  // 🐨 verify the loading spinner is no longer in the document (X)
-  // 🐨 verify the latitude and longitude appear correctly (X)
   expect(screen.queryByLabelText(/loading/i)).not.toBeInTheDocument()
   expect(screen.getByText(/latitude/i)).toHaveTextContent(
     `Latitude: ${fakePosition.coords.latitude}`,
@@ -119,3 +87,44 @@ no-unused-vars: "off",
 
 // In situations like this where we are directly calling a function that results in calling a state update or function,
 // we do have to use act ourselves.
+
+// Mock the module (Extra) /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// There's an alternative way that we could have solved this problem. That is by mocking the third-party module that's 
+// interacting with geolocation. If we look at our implementation here, we've got this { useCurrentPosition } from 
+// 'react-use-geolocation'.
+
+// In review, let's start with the implementation. When we render this location, it's going to call this 
+// useCurrentPosition. From the way things look here, we're going to be using useCurrentPosition from 
+// react-use-geolocation.
+
+// That's not the case because we used jest.mock, which will rewrite all of our module imports to use a mocked version 
+// of react-use-geolocation, which means that useCurrentPosition is going to be a Jest mock function.
+
+// When useCurrentPosition is called, it's going to be calling useMockCurrentPosition, which is technically a hook. 
+// It's using React useState, but we're taking that state updater value and assigning it to something that we can call 
+// ourselves.
+
+// It's returning the state value, which at the very beginning is just this empty array. We get position is undefined, 
+// error is undefined, which will result in this spinner showing up. That allows us to verify that the spinner is in 
+// the document.
+
+// We want to trigger a state update from our test. We're going to say, "Hey, act. I'm going to do some sort of action 
+// and when I'm all done, I want you to flush all of the side effects." The action that we take is to set the return 
+// value to this array that has our fake position.
+
+// That will trigger a re-render in any component that's using useCurrentPosition. This time, when we say state at 
+// position , it's going to be this array that has a fake position.
+
+// We come back to this location, we call useCurrentPosition, which is our useMockCurrentPosition. This is going to 
+// give us our fake position, which will ultimately result in rendering this latitude and longitude. We can make all 
+// of those assertions to ensure that our component is working properly.
+
+// Anytime you have a module, whether it be third party or your own, and you don't want its code to run in the test 
+// environment, then you can use the Jest mock API to mock out that particular component. Mock implementations of 
+// functions to make them do whatever you want them to do in your test environment, so that you can have a good 
+// testing experience.
+
+// Just be careful when you do this because you are poking holes in reality. That reduces the amount of confidence that 
+// your test can give you. Sometimes, you just really have to mock things for practicality reasons. It's nice that 
+// Jest gives us such powerful APIs to do that.
