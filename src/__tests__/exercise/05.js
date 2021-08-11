@@ -147,7 +147,7 @@ test(`unknow server error displays the error message`, async () => {
 // here and say, "If request.getHeaders..." I don't know. We could add some special thing to say, "Hey, let's do an 
 // unexpected server error."
 
-// 4:05 In review, all that we did here is we added an afterEach to reset all the handlers that we add after the 
+// In review, all that we did here is we added an afterEach to reset all the handlers that we add after the 
 // server has started, so all the handlers that are specific and co-located to a test. Then, we created this test and 
 // added a runtime handler here for overriding that login API request. This time, it's just going to give us a 500 
 // with testErrorMessage.
