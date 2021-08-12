@@ -5,29 +5,41 @@ import * as React from 'react'
 import {render, act} from '@testing-library/react'
 import useCounter from '../../components/use-counter'
 
-test('exposes the count and increment/decrement functions', () => {
-  let result
+function setup({initialProps} = {}) {
+  const result = {}
   function TestComponent() {
-    result = useCounter()
+    result.current = useCounter(initialProps)
     return null
   }
   render(<TestComponent />)
-  expect(result.count).toBe(0)
-  act(() => result.increment())
-  expect(result.count).toBe(1)
-  act(() => result.decrement())
-  expect(result.count).toBe(0)
-  // console.log(result)
+  return result
+}
 
-  // const increment = screen.getByRole('button', {name: /increment/i})
-  // const decrement = screen.getByRole('button', {name: /decrement/i})
-  // const message = screen.getByText(/current count/i)
+test('exposes the count and increment/decrement functions', () => {
+  const result = setup()
+  expect(result.current.count).toBe(0)
+  act(() => result.current.increment())
+  expect(result.current.count).toBe(1)
+  act(() => result.current.decrement())
+  expect(result.current.count).toBe(0)
+})
 
-  // expect(message).toHaveTextContent('Current count: 0')
-  // userEvent.click(increment)
-  // expect(message).toHaveTextContent('Current count: 1')
-  // userEvent.click(decrement)
-  // expect(message).toHaveTextContent('Current count: 0')
+test('allows customization of the initial count', () => {
+  const result = setup({initialProps: {initialCount: 3}})
+  expect(result.current.count).toBe(3)
+  act(() => result.current.increment())
+  expect(result.current.count).toBe(4)
+  act(() => result.current.decrement())
+  expect(result.current.count).toBe(3)
+})
+
+test('allows customization of the step', () => {
+  const result = setup({initialProps: {step: 2}})
+  expect(result.current.count).toBe(0)
+  act(() => result.current.increment())
+  expect(result.current.count).toBe(2)
+  act(() => result.current.decrement())
+  expect(result.current.count).toBe(0)
 })
 
 /* eslint no-unused-vars:0 */
@@ -47,7 +59,7 @@ test('exposes the count and increment/decrement functions', () => {
 // I feel like this type of test is easy to read and understand. If I were building this today, this is the type of
 // test I would write.
 
-// Fake Component //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Fake Component (Extra) //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // This is one of the very few situations where you do have to use the act utility from ReactTestUtils, which is React
 // exported for us from react-testing-library.
@@ -66,3 +78,18 @@ test('exposes the count and increment/decrement functions', () => {
 
 // This is one of the very few situations where you do have to use the act utility from ReactTestUtils, which is React
 // exported for us from react-testing-library.
+
+// Setup Function (Extra) //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// All right. Let's add a couple of extra tests, one for the initialCount and one for the step option that is provided 
+// by this useCounter component. We have that initialCount and that step.
+
+// Once we start doing this kind of thing, we've got some duplication here that I'm not a super-duper huge fan of. 
+// What I'm going to do is make a function here called setup. This is going to take an object called initialProps. 
+// We'll default that to an empty object there.
+
+// We've been able to abstract out this setup function. Still, we had to deal with some little hiccups here to deal 
+// with that variable binding because we can't reassign a variable here and expected this binding to update to the 
+// same object that we're setting in here. Therefore, we create a single object, return that object, and then update it.
+
+// Using React-Hooks Testing Library (Extra) //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
