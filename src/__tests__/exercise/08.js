@@ -1,22 +1,11 @@
 // testing custom hooks
 // http://localhost:3000/counter-hook
 
-import * as React from 'react'
-import {render, act} from '@testing-library/react'
+import {renderHook, act} from '@testing-library/react-hooks'
 import useCounter from '../../components/use-counter'
 
-function setup({initialProps} = {}) {
-  const result = {}
-  function TestComponent() {
-    result.current = useCounter(initialProps)
-    return null
-  }
-  render(<TestComponent />)
-  return result
-}
-
 test('exposes the count and increment/decrement functions', () => {
-  const result = setup()
+  const {result} = renderHook(useCounter)
   expect(result.current.count).toBe(0)
   act(() => result.current.increment())
   expect(result.current.count).toBe(1)
@@ -25,7 +14,7 @@ test('exposes the count and increment/decrement functions', () => {
 })
 
 test('allows customization of the initial count', () => {
-  const result = setup({initialProps: {initialCount: 3}})
+  const {result} = renderHook(useCounter, {initialProps: {initialCount: 3}})
   expect(result.current.count).toBe(3)
   act(() => result.current.increment())
   expect(result.current.count).toBe(4)
@@ -34,12 +23,22 @@ test('allows customization of the initial count', () => {
 })
 
 test('allows customization of the step', () => {
-  const result = setup({initialProps: {step: 2}})
+  const {result} = renderHook(useCounter, {initialProps: {step: 2}})
   expect(result.current.count).toBe(0)
   act(() => result.current.increment())
   expect(result.current.count).toBe(2)
   act(() => result.current.decrement())
   expect(result.current.count).toBe(0)
+})
+
+test(`the step can be changed`, () => {
+  const {result, rerender} = renderHook(useCounter, {initialProps: {step: 3}})
+  expect(result.current.count).toBe(0)
+  act(() => result.current.increment())
+  expect(result.current.count).toBe(3)
+  rerender({step: 2})
+  act(() => result.current.decrement())
+  expect(result.current.count).toBe(1)
 })
 
 /* eslint no-unused-vars:0 */
@@ -93,3 +92,21 @@ test('allows customization of the step', () => {
 // same object that we're setting in here. Therefore, we create a single object, return that object, and then update it.
 
 // Using React-Hooks Testing Library (Extra) //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// All right. Now we are ready to get rid of some of this boilerplate and jump into react-hooks-testing-library, which 
+// is part of the testing-library family. That setup() function that we wrote, very similar to the renderHook function 
+// from react-hooks-testing-library. Let's swap those two things.
+
+// Instead of importing react-testing-library, we're going to import react-hooks-testing-library. This is going to give 
+// us a renderHook, in addition to this act function. Instead of this setup, we're going to be calling renderHook.
+
+// RenderHook is going to take the hook that we want to render, so useCounter. It will return an object that has a 
+// result. We'll destructure that. If we save that, our first test is passing. Let's get the other ones all up and 
+// passing.
+
+// In review, we had to remove that setup function that we'd created and replaced it with renderHook from 
+// react-hooks-testing-library. This will accept our hook that we're trying to test. It will return an object that has 
+// a result property, and then we use it just as we had with our own custom setup function.
+
+// If we wanted to pass initial props, we can do so as one option. If we wanted to rerender with new props, we could 
+// call that rerender function with the new arguments we want to pass to our custom hook.
